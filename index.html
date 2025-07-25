@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Deuna IA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--background, #F4F0F9);
+      color: var(--text-color, #000000);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+
+    }
+
+
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 280px;
+      height: 280px;
+      background: url('icon-deuna.png') no-repeat center center;
+      background-size: contain;
+      transform: translate(-50%, -50%);
+      opacity: 0.08;
+      z-index: 0;
+      opacity: 0.05;
+    }
+
+    #chat-container {
+      width: 90vw;
+      height: 95vh;
+      background: white url('icon-deuna.png') no-repeat center center;
+      background-size: 260px;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-blend-mode: lighten;
+      opacity: 1;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1;
+      box-sizing: border-box;
+      transition: all 0.3s ease-in-out;
+
+    }
+
+    header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: #512A6F;
+      color: white;
+    }
+
+    header img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    #messages {
+      flex-grow: 1;
+      padding: 16px;
+      overflow-y: auto;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .message {
+      padding: 8px 12px;
+      border-radius: 20px;
+      max-width: 80%;
+      width: fit-content;
+      line-height: 1.5;
+    }
+
+    .bot {
+      background-color: #E4E6EB;
+      align-self: flex-start;
+    }
+
+    .user {
+      background-color: #00CCB3;
+      color: white;
+      align-self: flex-end;
+    }
+
+    #input-form {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    #input {
+      flex-grow: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    #send {
+      padding: 10px 16px;
+      background: #512A6F;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #messages::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 260px;
+      height: 260px;
+      background: url('icon-deuna.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0.06;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 600px) {
+      #chat-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      header {
+        padding: 12px;
+      }
+
+      header img {
+        height: 32px;
+        margin-right: 8px;
+      }
+
+      header h1 {
+        font-size: 1rem;
+      }
+
+      #messages {
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .message {
+        font-size: 0.95rem;
+        padding: 10px 14px;
+        border-radius: 18px;
+      }
+
+      #input-form {
+        flex-direction: row;
+        padding: 8px;
+      }
+
+      #input {
+        font-size: 1rem;
+        padding: 10px;
+      }
+
+      #send {
+        font-size: 1rem;
+        padding: 10px 16px;
+      }
+    }
+
+    #theme-toggle {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    #theme-control {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    #theme-name {
+      color: white;
+    }
+
+
+   body.theme-classic {
+      --header-bg: #512A6F;
+      --user-bg: #00CCB3;
+      --bot-bg: #E4E6EB;
+      --background: #F4F0F9;
+      --text-color: #000000;
+    }
+
+    body.theme-sky {
+      --header-bg: #1976D2;
+      --user-bg: #0288D1;
+      --bot-bg: #E3F2FD;
+      --background: #E1F5FE;
+      --text-color: #000000;
+    }
+
+    body.theme-earth {
+      --header-bg: #4E342E;
+      --user-bg: #6D4C41;
+      --bot-bg: #D7CCC8;
+      --background: #EFEBE9;
+      --text-color: #000000;
+    }
+
+
+    body.theme-dark {
+      --header-bg: #1E1E1E;
+      --user-bg: #2E7D32;
+      --bot-bg: #424242;
+      --background: #121212;
+      --text-color: #FFFFFF;
+    }
+
+    body.theme-dark .bot {
+      color: #FFFFFF;
+    }
+
+
+    header {
+      background: var(--header-bg);
+      color: var(--text-color);
+    }
+
+    .user {
+      background-color: var(--user-bg);
+    }
+
+    .bot {
+      background-color: var(--bot-bg);
+      color: #000;
+    }
+
+    header h1,
+    #theme-name {
+      color: white;
+    }
+
+
+  .typing {
+    font-style: italic;
+    color: #666;
+    background-color: transparent;
+    box-shadow: none;
+    align-self: flex-start;
+    padding: 8px 12px;
+    border-radius: 20px;
+  }
+
+  .message {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.3s forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  #toggle-chat {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background: #512A6F;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+
+  #toggle-chat:hover {
+    transform: scale(1.1);
+  }
+
+     #chat-container.compact {
+      width: 400px;
+      height: 600px;
+      border-radius: 16px;
+    }
+
+    body.compact-mode {
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+
+
+    body,
+    body.compact-mode {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+     #sound-toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+      <header>
+      <img src="icon-deuna.png" alt="Logo Deuna" />
+      <h1>Portal IA Deuna</h1>
+        <div id="theme-control">
+          <button id="theme-toggle" title="Cambiar tema">🎨</button>
+          <span id="theme-name">Clásico</span>
+          <button id="sound-toggle" title="Activar/Desactivar sonido">🔊</button>
+        </div>
+
+    </header>
+
+    <div id="messages"></div>
+    <form id="input-form">
+      <input type="text" id="input" placeholder="Escribe tu mensaje..." required />
+      <button type="submit" id="send">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    const webhookURL = 'https://saramuhen.app.n8n.cloud/webhook/chat-agent';
+    const sessionId = 'gerencia-001';
+
+    const form = document.getElementById('input-form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    function formatMessageContent(text) {
+      const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+      let result = '';
+
+      paragraphs.forEach(paragraph => {
+        const lines = paragraph.split('\n').map(line => line.trim()).filter(Boolean);
+        const isList = lines.every(line => /^(\d+\.\s+|- )/.test(line));
+
+        if (isList) {
+          result += '<ul>' + lines.map(line =>
+            `<li>${line.replace(/^(\d+\.\s+|- )/, '')}</li>`
+          ).join('') + '</ul>';
+        } else {
+          result += `<p>${lines.join('<br>')}</p>`;
+        }
+      });
+      return result;
+    }
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.classList.add('message', sender);
+      msg.innerHTML = formatMessageContent(text);
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function showTyping() {
+      const typingMsg = document.createElement('div');
+      typingMsg.classList.add('message', 'typing');
+      typingMsg.id = 'typing-indicator';
+      typingMsg.textContent = '✍️ Escribiendo...';
+      messages.appendChild(typingMsg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typingMsg = document.getElementById('typing-indicator');
+      if (typingMsg) {
+        typingMsg.remove();
+      }
+    }
+
+
+    window.onload = () => {
+      appendMessage('👋 ¡Bienvenido al Portal IA de Deuna! ¿En qué puedo ayudarte hoy?', 'bot');
+
+      const chatContainer = document.getElementById('chat-container');
+      const toggleChatBtn = document.getElementById('toggle-chat');
+      toggleChatBtn.textContent = '🔽';
+      toggleChatBtn.title = 'Reducir chat';
+
+
+      let isCompact = false;
+
+      toggleChatBtn.addEventListener('click', () => {
+        isCompact = !isCompact;
+
+        chatContainer.classList.toggle('compact', isCompact);
+        document.body.classList.toggle('compact-mode', isCompact);
+
+        toggleChatBtn.textContent = isCompact ? '🔼' : '🔽';
+        toggleChatBtn.title = isCompact ? 'Expandir chat' : 'Reducir chat';
+
+      });
+    };
+
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userMessage = input.value;
+      appendMessage(userMessage, 'user');
+      input.value = '';
+
+      try {
+        showTyping(); // Muestra "Escribiendo..."
+
+        const response = await fetch(webhookURL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            action: 'sendMessage',
+            chatInput: userMessage
+          })
+        });
+
+        const data = await response.json();
+        removeTyping(); 
+        appendMessage(data.respuesta || '🤖 Sin respuesta del agente.', 'bot');
+        if (soundEnabled) {
+          document.getElementById('notification-sound').play().catch(e => {
+            console.log('🔇 Sonido bloqueado hasta interacción del usuario');
+          });
+        }
+
+
+
+      } catch (error) {
+        appendMessage('⚠️ Error al conectar con el agente.', 'bot');
+        console.error(error);
+        removeTyping();
+
+      }
+    });
+
+      const themes = [
+        { class: 'theme-classic', name: 'Clásico' },
+        { class: 'theme-sky', name: 'Cielo' },
+        { class: 'theme-earth', name: 'Tierra' },
+        { class: 'theme-dark', name: 'Oscuro' }
+      ];
+
+      let currentTheme = 0;
+      const themeNameElement = document.getElementById('theme-name');
+
+      document.body.classList.add(themes[currentTheme].class);
+      themeNameElement.textContent = themes[currentTheme].name;
+
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.body.classList.remove(themes[currentTheme].class);
+        currentTheme = (currentTheme + 1) % themes.length;
+        document.body.classList.add(themes[currentTheme].class);
+        themeNameElement.textContent = themes[currentTheme].name;
+      });
+
+
+      let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // Activo por defecto
+      const soundToggle = document.getElementById('sound-toggle');
+      const soundIcon = () => (soundEnabled ? '🔊' : '🔇');
+      soundToggle.textContent = soundIcon();
+      soundToggle.title = soundEnabled ? 'Desactivar sonido' : 'Activar sonido';
+
+
+      soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('soundEnabled', soundEnabled);
+        soundToggle.textContent = soundIcon();
+        soundToggle.title = soundEnabled ? 'Desactivar sonido' : 'Activar sonido';
+
+      });
+
+
+    </script>
+  <button id="toggle-chat">💬</button>
+  <audio id="notification-sound" src="notify_ping.mp3" preload="auto"></audio>
+</body>
+</html>
