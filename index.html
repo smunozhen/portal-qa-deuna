@@ -366,9 +366,22 @@
     </form>
   </div>
 
-  <script>
-    const webhookURL = 'https://testqa-executor.app.n8n.cloud/webhook/a07731ec-5485-47e8-b8b7-f1a3d6acebd0';
-    const sessionId = 'gerencia-001';
+ <script>
+    const webhookURL = 'https://business-portal-executo11.app.n8n.cloud/webhook/a07731ec-5485-47e8-b8b7-f1a3d6acebd0';
+
+    function generateSessionId() {
+      return 'xxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    let sessionId = sessionStorage.getItem('chatSessionId');
+    if (!sessionId) {
+      sessionId = generateSessionId();
+      sessionStorage.setItem('chatSessionId', sessionId);
+    }
 
     const form = document.getElementById('input-form');
     const input = document.getElementById('input');
@@ -412,114 +425,88 @@
 
     function removeTyping() {
       const typingMsg = document.getElementById('typing-indicator');
-      if (typingMsg) {
-        typingMsg.remove();
-      }
+      if (typingMsg) typingMsg.remove();
     }
 
-
     window.onload = () => {
-      appendMessage('👋 ¡Bienvenido al Portal IA de Deuna! ¿En qué puedo ayudarte hoy?', 'bot');
+      appendMessage('👋 ¡Bienvenido al Portal QA IA de Deuna! ¿En qué puedo ayudarte hoy?', 'bot');
 
       const chatContainer = document.getElementById('chat-container');
       const toggleChatBtn = document.getElementById('toggle-chat');
       toggleChatBtn.textContent = '🔽';
       toggleChatBtn.title = 'Reducir chat';
 
-
       let isCompact = false;
-
       toggleChatBtn.addEventListener('click', () => {
         isCompact = !isCompact;
-
         chatContainer.classList.toggle('compact', isCompact);
         document.body.classList.toggle('compact-mode', isCompact);
-
         toggleChatBtn.textContent = isCompact ? '🔼' : '🔽';
         toggleChatBtn.title = isCompact ? 'Expandir chat' : 'Reducir chat';
-
       });
     };
-
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const userMessage = input.value;
       appendMessage(userMessage, 'user');
       input.value = '';
-
       try {
-        showTyping(); // Muestra "Escribiendo..."
-
+        showTyping();
         const response = await fetch(webhookURL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sessionId: sessionId,
             action: 'sendMessage',
             chatInput: userMessage
           })
         });
-
         const data = await response.json();
-        removeTyping(); 
+        removeTyping();
         appendMessage(data.respuesta || '🤖 Sin respuesta del agente.', 'bot');
         if (soundEnabled) {
-          document.getElementById('notification-sound').play().catch(e => {
+          document.getElementById('notification-sound').play().catch(() => {
             console.log('🔇 Sonido bloqueado hasta interacción del usuario');
           });
         }
-
-
-
       } catch (error) {
         appendMessage('⚠️ Error al conectar con el agente.', 'bot');
         console.error(error);
         removeTyping();
-
       }
     });
 
-      const themes = [
-        { class: 'theme-classic', name: 'Clásico' },
-        { class: 'theme-sky', name: 'Cielo' },
-        { class: 'theme-earth', name: 'Tierra' },
-        { class: 'theme-dark', name: 'Oscuro' }
-      ];
+    const themes = [
+      { class: 'theme-classic', name: 'Clásico' },
+      { class: 'theme-sky', name: 'Cielo' },
+      { class: 'theme-earth', name: 'Tierra' },
+      { class: 'theme-dark', name: 'Oscuro' }
+    ];
 
-      let currentTheme = 0;
-      const themeNameElement = document.getElementById('theme-name');
-
+    let currentTheme = 0;
+    const themeNameElement = document.getElementById('theme-name');
+    document.body.classList.add(themes[currentTheme].class);
+    themeNameElement.textContent = themes[currentTheme].name;
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      document.body.classList.remove(themes[currentTheme].class);
+      currentTheme = (currentTheme + 1) % themes.length;
       document.body.classList.add(themes[currentTheme].class);
       themeNameElement.textContent = themes[currentTheme].name;
+    });
 
-      document.getElementById('theme-toggle').addEventListener('click', () => {
-        document.body.classList.remove(themes[currentTheme].class);
-        currentTheme = (currentTheme + 1) % themes.length;
-        document.body.classList.add(themes[currentTheme].class);
-        themeNameElement.textContent = themes[currentTheme].name;
-      });
-
-
-      let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // Activo por defecto
-      const soundToggle = document.getElementById('sound-toggle');
-      const soundIcon = () => (soundEnabled ? '🔊' : '🔇');
+    let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+    const soundToggle = document.getElementById('sound-toggle');
+    const soundIcon = () => (soundEnabled ? '🔊' : '🔇');
+    soundToggle.textContent = soundIcon();
+    soundToggle.title = soundEnabled ? 'Desactivar sonido' : 'Activar sonido';
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('soundEnabled', soundEnabled);
       soundToggle.textContent = soundIcon();
       soundToggle.title = soundEnabled ? 'Desactivar sonido' : 'Activar sonido';
-
-
-      soundToggle.addEventListener('click', () => {
-        soundEnabled = !soundEnabled;
-        localStorage.setItem('soundEnabled', soundEnabled);
-        soundToggle.textContent = soundIcon();
-        soundToggle.title = soundEnabled ? 'Desactivar sonido' : 'Activar sonido';
-
-      });
-
-
-    </script>
+    });
+  </script>
   <button id="toggle-chat">💬</button>
   <audio id="notification-sound" src="notify_ping.mp3" preload="auto"></audio>
 </body>
